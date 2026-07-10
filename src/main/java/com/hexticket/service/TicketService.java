@@ -2,6 +2,7 @@ package com.hexticket.service;
 
 import com.hexticket.dto.PurchaseRequest;
 import com.hexticket.dto.SeatResponse;
+import com.hexticket.dto.TicketPurchasedEvent;
 import com.hexticket.model.Seat;
 import com.hexticket.model.SeatStatus;
 import com.hexticket.repository.SeatRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class TicketService {
 
     private final SeatRepository seatRepository;
     private final RedissonClient redissonClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate; // Kafka bağımlılığı
 
     public List<SeatResponse> getAvailableSeats(UUID eventId) {
         return seatRepository.findByEventIdAndStatus(eventId, SeatStatus.AVAILABLE)
@@ -55,6 +58,14 @@ public class TicketService {
             seat.setUserId(request.getUserId());
 
             seatRepository.save(seat);
+
+            TicketPurchasedEvent event = new TicketPurchasedEvent(
+                    request.getUserId(),
+                    request.getSeatId(),
+                    seat.getEvent().getName()
+            );
+
+            kafkaTemplate.send("ticket-purchases", request.getUserId().toString(), event);
 
             log.info("Seat {} successfully purchased by User {}", request.getSeatId(), request.getUserId());
 
