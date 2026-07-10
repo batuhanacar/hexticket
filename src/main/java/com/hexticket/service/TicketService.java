@@ -1,6 +1,7 @@
 package com.hexticket.service;
 
 import com.hexticket.dto.PurchaseRequest;
+import com.hexticket.dto.SeatResponse;
 import com.hexticket.model.Seat;
 import com.hexticket.model.SeatStatus;
 import com.hexticket.repository.SeatRepository;
@@ -11,6 +12,8 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,6 +23,13 @@ public class TicketService {
 
     private final SeatRepository seatRepository;
     private final RedissonClient redissonClient;
+
+    public List<SeatResponse> getAvailableSeats(UUID eventId) {
+        return seatRepository.findByEventIdAndStatus(eventId, SeatStatus.AVAILABLE)
+                .stream()
+                .map(seat -> new SeatResponse(seat.getId(), seat.getSeatNumber(), seat.getStatus()))
+                .toList();
+    }
 
     @Transactional
     public void purchaseTicket(PurchaseRequest request) {
