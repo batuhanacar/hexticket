@@ -3,6 +3,7 @@ package com.hexticket.service;
 import com.hexticket.dto.PurchaseRequest;
 import com.hexticket.dto.SeatResponse;
 import com.hexticket.dto.TicketPurchasedEvent;
+import com.hexticket.exception.SeatAlreadySoldException;
 import com.hexticket.model.Seat;
 import com.hexticket.model.SeatStatus;
 import com.hexticket.repository.SeatRepository;
@@ -51,7 +52,7 @@ public class TicketService {
                     .orElseThrow(() -> new RuntimeException("Seat not found"));
 
             if (seat.getStatus() != SeatStatus.AVAILABLE) {
-                throw new RuntimeException("Seat is already sold or reserved");
+                throw new SeatAlreadySoldException("Seat is already sold or reserved");
             }
 
             seat.setStatus(SeatStatus.SOLD);
