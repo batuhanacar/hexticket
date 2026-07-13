@@ -51,3 +51,5 @@ tmp/
 .env.local
 .env.*.local
 docker-compose.override.yml
+*.yml
+*.properties

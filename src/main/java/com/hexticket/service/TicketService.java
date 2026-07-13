@@ -26,7 +26,7 @@ public class TicketService {
 
     private final SeatRepository seatRepository;
     private final RedissonClient redissonClient;
-    private final KafkaTemplate<String, Object> kafkaTemplate; // Kafka bağımlılığı
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public List<SeatResponse> getAvailableSeats(UUID eventId) {
         return seatRepository.findByEventIdAndStatus(eventId, SeatStatus.AVAILABLE)
