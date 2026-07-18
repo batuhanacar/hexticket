@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class TicketService {
     private final RedissonClient redissonClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Cacheable(value = "availableSeats", key = "#eventId")
     public List<SeatResponse> getAvailableSeats(UUID eventId) {
         return seatRepository.findByEventIdAndStatus(eventId, SeatStatus.AVAILABLE)
                 .stream()
@@ -36,6 +39,7 @@ public class TicketService {
     }
 
     @Transactional
+    @CacheEvict(value = "availableSeats", key = "#result != null ? #result.event.id : 'default'")
     public void purchaseTicket(PurchaseRequest request) {
         String lockKey = "lock:seat:" + request.getSeatId();
         RLock lock = redissonClient.getLock(lockKey);
