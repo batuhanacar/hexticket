@@ -1,15 +1,17 @@
 package com.hexticket.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
+@Builder
 @Entity
 @Table(name = "seats")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Seat {
 
     @Id
